@@ -1,6 +1,7 @@
-import React, {Fragment} from "react";
+import React, {Fragment, useState, useEffect} from "react";
 import GrayImg from "../../shared/gray-img";
 import DescriptionWithLink from "../../shared/description-with-link";
+import Form from "./form";
 
 async function getSatellites(id){
   let response = await fetch(`http://localhost:3000/api/${id}.json`);
@@ -8,47 +9,43 @@ async function getSatellites(id){
   return data;
 }
 
-class Planet extends React.Component {
+const Planet = (props) => {
 
-  constructor(props){
-    super(props);
-    this.state = {
-      satellites: []
-    }
+  const [satellites, setSatellites] = useState([]);
+
+  useEffect(() => {
+    getSatellites(props.id).then(data => {
+      setSatellites(data['satellites'])
+    })
+  }, [])
+
+  const addSatellite = (newSatellite) => {
+    setSatellites([...satellites, newSatellite]);
   }
 
-  componentDidMount(){
-    getSatellites(this.props.id).then(data => {
-      this.setState(state => ({
-        satellites: data['satellites']
-      }))
-    }
-    )
-  }
-
-  render(){
-    let title;
-    if(this.props.titleWithUnderline){
-      title = <h4><u>{this.props.name}</u></h4>
+  let title;
+    if(props.titleWithUnderline){
+      title = <h4><u>{props.name}</u></h4>
     } else {
-      title = <h4>{this.props.name}</h4>
+      title = <h4>{props.name}</h4>
     }
     
     return (
-      //passando como função, ela será executada depois do click
-      <div /*onClick={() => this.props.clickOnPlanet(this.props.name)}*/> 
+      <div> 
         {title}
-        <DescriptionWithLink description={this.props.description} link={this.props.link}/>
-        <GrayImg img_url={this.props.img_url} gray={this.props.gray}/>
+        <DescriptionWithLink description={props.description} link={props.link}/>
+        <GrayImg img_url={props.img_url} gray={props.gray}/>
         <h4>Satélites</h4>
+        <hr/>
+        <Form addSatellite={addSatellite}/>
+        <hr/>
         <ul>
-          {this.state.satellites.map((satellite, index) =>
+          {satellites.map((satellite, index) =>
           <li key={index}>{satellite.name}</li>)}
         </ul>
       <hr/>
       </div>
     )
-  }
 
 }
 
